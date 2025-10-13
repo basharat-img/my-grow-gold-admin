@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { fileURLToPath, URL } from 'node:url'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -10,4 +11,10 @@ export default defineConfig({
       },
     }),
   ],
+  resolve: {
+    alias: {
+      formik: fileURLToPath(new URL('./src/lib/formik.jsx', import.meta.url)),
+      yup: fileURLToPath(new URL('./src/lib/yup.js', import.meta.url)),
+    },
+  },
 })

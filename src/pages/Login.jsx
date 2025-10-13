@@ -1,88 +1,106 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Navigate, useNavigate } from "react-router";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Button } from "../components/ui/button";
 import { useAuth } from "../context/AuthContext";
+import { Formik } from "formik";
+import { object, string } from "yup";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 
 const Login = () => {
   const { isAuthenticated, login } = useAuth();
   const navigate = useNavigate();
-  const [formState, setFormState] = useState({ username: "", password: "" });
-  const [error, setError] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const validationSchema = useMemo(
+    () =>
+      object({
+        email: string().email("Enter a valid email address").required("Email is required"),
+        password: string().required("Password is required"),
+      }),
+    [],
+  );
 
   if (isAuthenticated) {
     return <Navigate to="/" replace />;
   }
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setFormState((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setError("");
-    setIsSubmitting(true);
-
-    const isSingleWord = /^\S+$/.test(formState.username) && /^\S+$/.test(formState.password);
-    if (!isSingleWord) {
-      setError("Please enter single-word credentials without spaces.");
-      setIsSubmitting(false);
-      return;
-    }
-
-    const success = await login(formState);
-    if (!success) {
-      setError("Invalid credentials. Try admin / growgold");
-      setIsSubmitting(false);
-      return;
-    }
-
-    navigate("/");
-  };
-
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[var(--color-background)] via-white to-[var(--color-muted)] px-4">
+    <div className="flex min-h-screen items-center justify-center bg-[var(--color-background)] px-4 py-10">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Grow Gold Admin</CardTitle>
-          <CardDescription>Enter your single-word admin credentials to access the dashboard.</CardDescription>
+          <CardDescription>Sign in with your admin email to access the dashboard.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form className="space-y-5" onSubmit={handleSubmit}>
-            <div className="space-y-2">
-              <Label htmlFor="username">Admin ID</Label>
-              <Input
-                id="username"
-                name="username"
-                value={formState.username}
-                onChange={handleChange}
-                required
-                placeholder="admin"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                value={formState.password}
-                onChange={handleChange}
-                required
-                placeholder="growgold"
-              />
-            </div>
-            {error && <p className="text-sm text-rose-500">{error}</p>}
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? "Signing in..." : "Sign in"}
-            </Button>
-          </form>
-          <p className="mt-6 text-center text-xs text-slate-400">
-            Tip: default credentials are <span className="font-semibold">admin</span> / <span className="font-semibold">growgold</span>.
+          <Formik
+            initialValues={{ email: "", password: "" }}
+            validationSchema={validationSchema}
+            onSubmit={async (values, { setStatus, setSubmitting }) => {
+              setStatus(null);
+              const success = await login(values);
+              if (!success) {
+                setStatus("Invalid credentials. Try admin@gmail.com / 12345678");
+                setSubmitting(false);
+                return;
+              }
+              navigate("/");
+            }}
+          >
+            {({ values, errors, touched, handleChange, handleBlur, handleSubmit, isSubmitting, status }) => (
+              <form className="space-y-5" onSubmit={handleSubmit} noValidate>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={values.email}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    placeholder="admin@gmail.com"
+                    autoComplete="email"
+                    required
+                  />
+                  {touched.email && errors.email && <p className="text-sm text-rose-500">{errors.email}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      value={values.password}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      placeholder="12345678"
+                      autoComplete="current-password"
+                      required
+                      className="pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      className="absolute inset-y-0 right-2 flex items-center text-slate-500 transition hover:text-slate-700"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? <FiEyeOff className="h-4 w-4" /> : <FiEye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  {touched.password && errors.password && <p className="text-sm text-rose-500">{errors.password}</p>}
+                </div>
+                {status && <p className="text-sm text-rose-500">{status}</p>}
+                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                  {isSubmitting ? "Signing in..." : "Sign in"}
+                </Button>
+              </form>
+            )}
+          </Formik>
+          <p className="mt-6 text-center text-xs text-slate-500">
+            Tip: default credentials are <span className="font-semibold">admin@gmail.com</span> / <span className="font-semibold">12345678</span>.
           </p>
         </CardContent>
       </Card>

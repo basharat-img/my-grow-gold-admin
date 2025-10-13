@@ -61,8 +61,6 @@ const Login = () => {
                 value={formState.username}
                 onChange={handleChange}
                 required
-                pattern="^\\S+$"
-                title="Use a single word without spaces"
                 placeholder="admin"
               />
             </div>
@@ -75,8 +73,6 @@ const Login = () => {
                 value={formState.password}
                 onChange={handleChange}
                 required
-                pattern="^\\S+$"
-                title="Use a single word without spaces"
                 placeholder="growgold"
               />
             </div>

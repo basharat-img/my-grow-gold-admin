@@ -22,7 +22,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = useCallback(async ({ username, password }) => {
-    if (username === "admin" && password === "growgold") {
+    if (username === "admin@gmail.com" && password === "12345678") {
       window.localStorage.setItem(storageKey, "true");
       setIsAuthenticated(true);
       return true;

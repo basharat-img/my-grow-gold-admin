@@ -4,19 +4,26 @@ import { Button } from "../ui/button";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router";
 import { ROUTES } from "../../config/routes";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from "../ui/dialog";
 
 const Header = ({ onToggleSidebar }) => {
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const [dialogOpen, setDialogOpen] = React.useState(false);
 
-  const handleLogout = () => {
-    const confirmed = window.confirm("Are you sure you want to logout?");
-    if (!confirmed) {
-      return;
-    }
-
+  const handleConfirmLogout = () => {
     logout();
     navigate(ROUTES.LOGIN);
+    setDialogOpen(false);
   };
 
   return (
@@ -36,14 +43,33 @@ const Header = ({ onToggleSidebar }) => {
         </div>
       </div>
       <div className="flex items-center space-x-3">
-        <Button
-          variant="ghost"
-          className="inline-flex items-center space-x-2 rounded-full border border-[var(--color-border)] bg-white px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-800"
-          onClick={handleLogout}
-        >
-          <FiLogOut className="h-4 w-4" />
-          <span>Logout</span>
-        </Button>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogTrigger asChild>
+            <Button
+              variant="ghost"
+              className="inline-flex items-center space-x-2 rounded-full border border-[var(--color-border)] bg-white px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-800"
+            >
+              <FiLogOut className="h-4 w-4" />
+              <span>Logout</span>
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Log out of the admin panel?</DialogTitle>
+              <DialogDescription>
+                You&apos;ll need to sign in again to manage Grow Gold data. Make sure you have saved any progress before exiting.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="outline">Stay signed in</Button>
+              </DialogClose>
+              <Button variant="destructive" onClick={handleConfirmLogout}>
+                Logout
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </header>
   );

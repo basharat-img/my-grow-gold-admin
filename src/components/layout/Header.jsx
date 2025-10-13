@@ -38,10 +38,6 @@ const Header = ({ onToggleSidebar }) => {
           <FiLogOut className="h-4 w-4" />
           <span>Logout</span>
         </Button>
-        <div className="flex items-center space-x-2 rounded-full border border-[var(--color-border)] bg-[var(--color-muted)] px-3 py-1">
-          <span className="h-2 w-2 rounded-full bg-emerald-500" />
-          <span className="text-xs font-medium uppercase tracking-wide text-slate-600">Live</span>
-        </div>
       </div>
     </header>
   );

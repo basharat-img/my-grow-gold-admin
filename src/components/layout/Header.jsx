@@ -3,14 +3,20 @@ import { FiLogOut, FiMenu, FiSearch } from "react-icons/fi";
 import { Button } from "../ui/button";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router";
+import { ROUTES } from "../../config/routes";
 
 const Header = ({ onToggleSidebar }) => {
   const { logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
+    const confirmed = window.confirm("Are you sure you want to logout?");
+    if (!confirmed) {
+      return;
+    }
+
     logout();
-    navigate("/login");
+    navigate(ROUTES.LOGIN);
   };
 
   return (

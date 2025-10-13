@@ -5,6 +5,7 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Button } from "../components/ui/button";
 import { useAuth } from "../context/AuthContext";
+import { ROUTES } from "../config/routes";
 import { Formik } from "formik";
 import { object, string } from "yup";
 import { FiEye, FiEyeOff } from "react-icons/fi";
@@ -24,7 +25,7 @@ const Login = () => {
   );
 
   if (isAuthenticated) {
-    return <Navigate to="/" replace />;
+    return <Navigate to={ROUTES.DASHBOARD} replace />;
   }
 
   return (
@@ -46,7 +47,7 @@ const Login = () => {
                 setSubmitting(false);
                 return;
               }
-              navigate("/");
+              navigate(ROUTES.DASHBOARD);
             }}
           >
             {({ values, errors, touched, handleChange, handleBlur, handleSubmit, isSubmitting, status }) => (

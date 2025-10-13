@@ -1,11 +1,13 @@
 import React from "react";
 import { NavLink } from "react-router";
-import { FiBarChart2, FiHome, FiUsers } from "react-icons/fi";
+import { FiBarChart2, FiGrid, FiHome, FiUsers } from "react-icons/fi";
+import { ROUTES } from "../../config/routes";
 
 const navigation = [
-  { name: "Overview", to: "/", icon: FiHome },
-  { name: "Analytics", to: "/analytics", icon: FiBarChart2 },
-  { name: "Team", to: "/team", icon: FiUsers },
+  { name: "Overview", to: ROUTES.DASHBOARD, icon: FiHome },
+  { name: "Analytics", to: ROUTES.ANALYTICS, icon: FiBarChart2 },
+  { name: "Team", to: ROUTES.TEAM, icon: FiUsers },
+  { name: "Add Table", to: ROUTES.ADD_TABLE, icon: FiGrid },
 ];
 
 const Sidebar = ({ isOpen, onClose }) => {
@@ -51,7 +53,7 @@ const Sidebar = ({ isOpen, onClose }) => {
               <NavLink
                 key={item.to}
                 to={item.to}
-                end={item.to === "/"}
+                end={item.to === ROUTES.DASHBOARD}
                 className={({ isActive }) =>
                   [
                     "flex items-center space-x-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",

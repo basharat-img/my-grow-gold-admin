@@ -105,7 +105,7 @@ const SubAdmins = () => {
                     <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
                       Password
                     </th>
-                    <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    <th className="whitespace-nowrap px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">
                       Actions
                     </th>
                   </tr>
@@ -143,9 +143,9 @@ const SubAdmins = () => {
                         <td className="whitespace-nowrap px-4 py-4 text-sm text-slate-500">
                           {"•".repeat(Math.max(subadmin.password.length, 6))}
                         </td>
-                        <td className="whitespace-nowrap px-4 py-4">
+                        <td className="whitespace-nowrap px-4 py-4 text-right">
                           <div
-                            className="relative flex justify-end"
+                            className="relative flex items-center justify-end"
                             ref={(node) => {
                               if (node) {
                                 menuRefs.current[subadmin.id] = node;
@@ -157,7 +157,7 @@ const SubAdmins = () => {
                             <Button
                               type="button"
                               variant="ghost"
-                              className="h-11 w-11 rounded-full border border-[var(--color-border)] p-0 shadow-sm"
+                              className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--color-border)] p-0 shadow-none"
                               onClick={() =>
                                 setActiveMenuId((current) => (current === subadmin.id ? null : subadmin.id))
                               }

@@ -157,16 +157,16 @@ const SubAdmins = () => {
                             <Button
                               type="button"
                               variant="ghost"
-                              className="h-9 w-9 rounded-full p-0"
+                              className="h-11 w-11 rounded-full border border-[var(--color-border)] p-0 shadow-sm"
                               onClick={() =>
                                 setActiveMenuId((current) => (current === subadmin.id ? null : subadmin.id))
                               }
                               aria-label={`More actions for ${subadmin.name}`}
                             >
-                              <FiMoreVertical className="h-5 w-5" />
+                              <FiMoreVertical className="h-6 w-6" />
                             </Button>
                             {activeMenuId === subadmin.id ? (
-                              <div className="absolute right-0 top-11 z-40 w-36 overflow-hidden rounded-lg border border-[var(--color-border)] bg-white shadow-lg">
+                              <div className="absolute right-0 top-12 z-40 w-36 overflow-hidden rounded-lg border border-[var(--color-border)] bg-white shadow-lg">
                                 <button
                                   type="button"
                                   className="flex w-full items-center justify-between px-4 py-2 text-sm text-slate-600 transition hover:bg-[var(--color-muted)]"

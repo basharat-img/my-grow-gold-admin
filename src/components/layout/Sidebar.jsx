@@ -1,11 +1,12 @@
 import React from "react";
 import { NavLink } from "react-router";
-import { FiBarChart2, FiHome, FiUsers } from "react-icons/fi";
+import { FiBarChart2, FiHome, FiKey, FiUsers } from "react-icons/fi";
 
 const navigation = [
   { name: "Overview", to: "/", icon: FiHome },
   { name: "Analytics", to: "/analytics", icon: FiBarChart2 },
   { name: "Team", to: "/team", icon: FiUsers },
+  { name: "Sub-Admins", to: "/sub-admins", icon: FiKey },
 ];
 
 const Sidebar = ({ isOpen, onClose }) => {

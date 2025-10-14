@@ -11,7 +11,7 @@ const root = createRoot(container);
 
 root.render(
   <React.StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename="/grow-gold-admin">
       <ThemeProvider>
         <AuthProvider>
           <App />

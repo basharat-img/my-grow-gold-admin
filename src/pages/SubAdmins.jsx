@@ -1,19 +1,58 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
+import { FiMoreVertical } from "react-icons/fi";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { useSubAdminManagement } from "../context/SubAdminContext";
 import { getModuleLabel } from "../config/subAdminModules";
+import ConfirmationDialog from "../components/ConfirmationDialog";
 
 const SubAdmins = () => {
   const navigate = useNavigate();
   const { subadmins, deleteSubAdmin } = useSubAdminManagement();
+  const [activeMenuId, setActiveMenuId] = useState(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState(null);
+  const menuRefs = useRef({});
 
-  const handleDelete = (id) => {
-    const confirmation = window.confirm("Are you sure you want to delete this sub-admin?");
-    if (!confirmation) return;
+  useEffect(() => {
+    if (!activeMenuId) {
+      return undefined;
+    }
 
-    deleteSubAdmin(id);
+    const handleClickOutside = (event) => {
+      const currentMenu = menuRefs.current[activeMenuId];
+      if (currentMenu && !currentMenu.contains(event.target)) {
+        setActiveMenuId(null);
+      }
+    };
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setActiveMenuId(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [activeMenuId]);
+
+  const handleDeleteRequest = (id) => {
+    setActiveMenuId(null);
+    setPendingDeleteId(id);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!pendingDeleteId) {
+      return;
+    }
+
+    deleteSubAdmin(pendingDeleteId);
+    setPendingDeleteId(null);
   };
 
   return (
@@ -105,23 +144,48 @@ const SubAdmins = () => {
                           {"•".repeat(Math.max(subadmin.password.length, 6))}
                         </td>
                         <td className="whitespace-nowrap px-4 py-4">
-                          <div className="flex items-center gap-2">
+                          <div
+                            className="relative flex justify-end"
+                            ref={(node) => {
+                              if (node) {
+                                menuRefs.current[subadmin.id] = node;
+                              } else {
+                                delete menuRefs.current[subadmin.id];
+                              }
+                            }}
+                          >
                             <Button
                               type="button"
-                              variant="outline"
-                              className="px-3"
-                              onClick={() => navigate(`/sub-admins/${subadmin.id}/edit`)}
+                              variant="ghost"
+                              className="h-9 w-9 rounded-full p-0"
+                              onClick={() =>
+                                setActiveMenuId((current) => (current === subadmin.id ? null : subadmin.id))
+                              }
+                              aria-label={`More actions for ${subadmin.name}`}
                             >
-                              Edit
+                              <FiMoreVertical className="h-5 w-5" />
                             </Button>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              className="border-rose-200 px-3 text-rose-600 hover:bg-rose-50"
-                              onClick={() => handleDelete(subadmin.id)}
-                            >
-                              Delete
-                            </Button>
+                            {activeMenuId === subadmin.id ? (
+                              <div className="absolute right-0 top-11 z-40 w-36 overflow-hidden rounded-lg border border-[var(--color-border)] bg-white shadow-lg">
+                                <button
+                                  type="button"
+                                  className="flex w-full items-center justify-between px-4 py-2 text-sm text-slate-600 transition hover:bg-[var(--color-muted)]"
+                                  onClick={() => {
+                                    setActiveMenuId(null);
+                                    navigate(`/sub-admins/${subadmin.id}/edit`);
+                                  }}
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  type="button"
+                                  className="flex w-full items-center justify-between px-4 py-2 text-sm text-rose-600 transition hover:bg-rose-50"
+                                  onClick={() => handleDeleteRequest(subadmin.id)}
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            ) : null}
                           </div>
                         </td>
                       </tr>
@@ -133,6 +197,17 @@ const SubAdmins = () => {
           )}
         </CardContent>
       </Card>
+
+      <ConfirmationDialog
+        open={Boolean(pendingDeleteId)}
+        title="Remove sub-admin?"
+        description="This action cannot be undone. The selected sub-admin will immediately lose access to all assigned modules."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        onCancel={() => setPendingDeleteId(null)}
+        onConfirm={handleConfirmDelete}
+        destructive
+      />
     </div>
   );
 };

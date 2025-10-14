@@ -1,10 +1,11 @@
 import React from "react";
 import { NavLink } from "react-router";
-import { FiBarChart2, FiHome, FiUsers } from "react-icons/fi";
+import { FiBarChart2, FiHome, FiShield, FiUsers } from "react-icons/fi";
 
 const navigation = [
   { name: "Overview", to: "/", icon: FiHome },
   { name: "Analytics", to: "/analytics", icon: FiBarChart2 },
+  { name: "Sub-admins", to: "/sub-admins", icon: FiShield },
   { name: "Team", to: "/team", icon: FiUsers },
 ];
 

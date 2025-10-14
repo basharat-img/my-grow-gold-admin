@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { useNavigate } from "react-router";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
@@ -8,17 +8,6 @@ import { getModuleLabel } from "../config/subAdminModules";
 const SubAdmins = () => {
   const navigate = useNavigate();
   const { subadmins, deleteSubAdmin } = useSubAdminManagement();
-
-  const moduleSummary = useMemo(
-    () =>
-      subadmins.reduce((acc, subadmin) => {
-        subadmin.modules.forEach((moduleId) => {
-          acc[moduleId] = (acc[moduleId] ?? 0) + 1;
-        });
-        return acc;
-      }, {}),
-    [subadmins],
-  );
 
   const handleDelete = (id) => {
     const confirmation = window.confirm("Are you sure you want to delete this sub-admin?");
@@ -42,63 +31,75 @@ const SubAdmins = () => {
         </Button>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
-        <Card className="border-[var(--color-border)]">
-          <CardHeader>
-            <CardTitle>Sub-Admin List</CardTitle>
-            <CardDescription>Monitor sub-admin credentials and module ownership at a glance.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {subadmins.length === 0 ? (
-              <div className="flex flex-col items-center justify-center space-y-3 rounded-lg border border-dashed border-[var(--color-border)] bg-[var(--color-muted)]/30 px-6 py-12 text-center">
-                <div className="space-y-2">
-                  <h2 className="text-lg font-semibold text-slate-800">No sub-admins yet</h2>
-                  <p className="text-sm text-slate-500">
-                    Create your first sub-admin to begin delegating responsibilities across the workspace.
-                  </p>
-                </div>
-                <Button type="button" onClick={() => navigate("/sub-admins/new")}>
-                  Create Sub-Admin
-                </Button>
+      <Card className="border-[var(--color-border)]">
+        <CardHeader>
+          <CardTitle>Sub-Admin List</CardTitle>
+          <CardDescription>Monitor sub-admin credentials and module ownership at a glance.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {subadmins.length === 0 ? (
+            <div className="flex flex-col items-center justify-center space-y-3 rounded-lg border border-dashed border-[var(--color-border)] bg-[var(--color-muted)]/30 px-6 py-12 text-center">
+              <div className="space-y-2">
+                <h2 className="text-lg font-semibold text-slate-800">No sub-admins yet</h2>
+                <p className="text-sm text-slate-500">
+                  Create your first sub-admin to begin delegating responsibilities across the workspace.
+                </p>
               </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-slate-200">
-                  <thead className="bg-slate-50">
-                    <tr>
-                      <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                        Name
-                      </th>
-                      <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                        Email
-                      </th>
-                      <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                        Modules
-                      </th>
-                      <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                        Password
-                      </th>
-                      <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200 bg-white">
-                    {subadmins.map((subadmin) => (
+              <Button type="button" onClick={() => navigate("/sub-admins/new")}>
+                Create Sub-Admin
+              </Button>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-slate-200">
+                <thead className="bg-slate-50">
+                  <tr>
+                    <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
+                      Name
+                    </th>
+                    <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
+                      Email
+                    </th>
+                    <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
+                      Modules
+                    </th>
+                    <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
+                      Password
+                    </th>
+                    <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 bg-white">
+                  {subadmins.map((subadmin) => {
+                    const visibleModules = subadmin.modules.slice(0, 3);
+                    const hiddenCount = subadmin.modules.length - visibleModules.length;
+
+                    return (
                       <tr key={subadmin.id}>
                         <td className="whitespace-nowrap px-4 py-4 text-sm font-semibold text-slate-800">{subadmin.name}</td>
                         <td className="whitespace-nowrap px-4 py-4 text-sm text-slate-600">{subadmin.email}</td>
                         <td className="px-4 py-4">
-                          <div className="flex flex-wrap gap-2">
-                            {subadmin.modules.map((moduleId) => (
-                              <span
-                                key={moduleId}
-                                className="inline-flex items-center rounded-full bg-[var(--color-muted)] px-2.5 py-1 text-xs font-medium text-[var(--color-primary)]"
-                              >
-                                {getModuleLabel(moduleId)}
-                              </span>
-                            ))}
-                          </div>
+                          {subadmin.modules.length === 0 ? (
+                            <span className="text-xs text-slate-400">No modules</span>
+                          ) : (
+                            <div className="flex flex-wrap items-center gap-2">
+                              {visibleModules.map((moduleId) => (
+                                <span
+                                  key={moduleId}
+                                  className="inline-flex items-center rounded-full border border-[var(--color-border)] bg-white px-2.5 py-1 text-xs font-medium text-slate-600 shadow-sm"
+                                >
+                                  {getModuleLabel(moduleId)}
+                                </span>
+                              ))}
+                              {hiddenCount > 0 && (
+                                <span className="inline-flex items-center rounded-full border border-dashed border-[var(--color-border)] px-2.5 py-1 text-xs font-semibold text-slate-500">
+                                  +{hiddenCount} more
+                                </span>
+                              )}
+                            </div>
+                          )}
                         </td>
                         <td className="whitespace-nowrap px-4 py-4 text-sm text-slate-500">
                           {"•".repeat(Math.max(subadmin.password.length, 6))}
@@ -124,39 +125,14 @@ const SubAdmins = () => {
                           </div>
                         </td>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="border-[var(--color-border)]">
-          <CardHeader>
-            <CardTitle>Module Coverage</CardTitle>
-            <CardDescription>Understand how responsibilities are distributed across the team.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {Object.keys(moduleSummary).length === 0 ? (
-              <p className="text-sm text-slate-500">
-                Assign modules to sub-admins to see their distribution summary here.
-              </p>
-            ) : (
-              <ul className="space-y-3">
-                {Object.entries(moduleSummary).map(([moduleId, count]) => (
-                  <li key={moduleId} className="flex items-center justify-between text-sm text-slate-600">
-                    <span className="font-medium text-slate-700">{getModuleLabel(moduleId)}</span>
-                    <span className="rounded-full bg-[var(--color-muted)] px-2.5 py-1 text-xs font-semibold text-[var(--color-primary)]">
-                      {count} {count === 1 ? "user" : "users"}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };

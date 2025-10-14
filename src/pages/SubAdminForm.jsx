@@ -178,28 +178,26 @@ const SubAdminForm = () => {
                     Choose the application modules this sub-admin can manage.
                   </p>
                 </div>
-                <div className="grid gap-2 sm:grid-cols-2">
+                <div className="grid gap-3 sm:grid-cols-2">
                   {SUB_ADMIN_MODULES.map((module) => {
                     const active = formState.modules.includes(module.id);
                     return (
-                      <button
+                      <label
                         key={module.id}
-                        type="button"
-                        onClick={() => toggleModule(module.id)}
-                        className={`flex items-center justify-between rounded-lg border px-3 py-2 text-sm transition-colors ${
+                        className={`flex cursor-pointer items-start gap-3 rounded-lg border px-3 py-3 text-sm transition-colors ${
                           active
-                            ? "border-[var(--color-primary)] bg-[var(--color-primary)] text-[var(--color-primary-foreground)]"
-                            : "border-[var(--color-border)] text-slate-600 hover:border-[var(--color-primary)] hover:text-[var(--color-primary)]"
+                            ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5"
+                            : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
                         }`}
                       >
-                        <span>{module.label}</span>
-                        <span
-                          className={`h-2 w-2 rounded-full ${
-                            active ? "bg-[var(--color-primary-foreground)]" : "bg-slate-300"
-                          }`}
-                          aria-label={active ? `${module.label} selected` : `${module.label} not selected`}
+                        <input
+                          type="checkbox"
+                          className="mt-1 h-4 w-4 rounded border-slate-300 text-[var(--color-primary)] focus:ring-[var(--color-primary)] focus:ring-offset-0"
+                          checked={active}
+                          onChange={() => toggleModule(module.id)}
                         />
-                      </button>
+                        <span className="font-medium text-slate-700">{module.label}</span>
+                      </label>
                     );
                   })}
                 </div>

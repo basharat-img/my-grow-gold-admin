@@ -157,6 +157,8 @@ const SubAdminForm = () => {
     navigate("/sub-admins");
   };
 
+
+  console.log({formState})
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -279,7 +281,7 @@ const SubAdminForm = () => {
                                 <input
                                   type="checkbox"
                                   className="h-4 w-4 rounded border-slate-300 text-[var(--color-primary)] focus:ring-[var(--color-primary)] focus:ring-offset-0"
-                                  disabled={!moduleEnabled}
+                                  // disabled={!moduleEnabled}
                                   checked={checked}
                                   onChange={() => toggleAction(module.id, action)}
                                 />

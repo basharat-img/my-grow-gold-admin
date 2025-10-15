@@ -51,7 +51,7 @@ const ConfirmationDialog = ({
         aria-describedby={description ? "confirmation-dialog-description" : undefined}
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="space-y-2">
+        <div className="space-y-2 text-center">
           <h2 id="confirmation-dialog-title" className="text-lg font-semibold text-slate-900">
             {title}
           </h2>
@@ -61,16 +61,26 @@ const ConfirmationDialog = ({
             </p>
           ) : null}
         </div>
-        <div className="mt-6 flex justify-center gap-2">
-          <Button type="button" variant="outline" onClick={() => onCancel?.()}>
-            {cancelLabel}
-          </Button>
+        <div className="mt-6 flex flex-col gap-2">
           <Button
             type="button"
             onClick={() => onConfirm?.()}
-            className={destructive ? "border-rose-200 bg-rose-600 text-white hover:bg-rose-700" : undefined}
+            autoFocus
+            className={`w-full justify-center ${
+              destructive
+                ? "border-rose-200 bg-rose-600 text-white hover:bg-rose-700 focus-visible:ring-rose-500"
+                : ""
+            }`}
           >
             {confirmLabel}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onCancel?.()}
+            className="w-full justify-center"
+          >
+            {cancelLabel}
           </Button>
         </div>
       </div>

@@ -61,7 +61,7 @@ const ConfirmationDialog = ({
             </p>
           ) : null}
         </div>
-        <div className="mt-6 flex justify-end gap-2">
+        <div className="mt-6 flex justify-center gap-2">
           <Button type="button" variant="outline" onClick={() => onCancel?.()}>
             {cancelLabel}
           </Button>

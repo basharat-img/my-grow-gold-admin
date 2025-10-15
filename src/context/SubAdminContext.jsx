@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
-import { SUB_ADMIN_MODULES } from "../config/subAdminModules";
+import { normalizePermissions } from "../config/subAdminModules";
 
 const SubAdminContext = createContext(undefined);
 
@@ -17,14 +17,41 @@ const DEFAULT_SUBADMINS = [
     name: "Saanvi",
     email: "saanvi@growgold.com",
     password: "welcome123",
-    modules: [SUB_ADMIN_MODULES[0].id, SUB_ADMIN_MODULES[1].id, SUB_ADMIN_MODULES[4].id],
+    permissions: {
+      ...normalizePermissions({
+        faq: {
+          view: true,
+          add: true,
+          edit: true,
+          delete: false,
+        },
+        dashboard: {
+          view: true,
+        },
+      }),
+    },
   },
   {
     id: generateId(),
     name: "Arjun",
     email: "arjun@growgold.com",
     password: "goldenpass",
-    modules: [SUB_ADMIN_MODULES[2].id, SUB_ADMIN_MODULES[3].id],
+    permissions: {
+      ...normalizePermissions({
+        faq: {
+          view: true,
+          add: false,
+          edit: false,
+          delete: false,
+        },
+        subAdmin: {
+          view: true,
+          add: true,
+          edit: true,
+          delete: false,
+        },
+      }),
+    },
   },
 ];
 
@@ -32,11 +59,28 @@ export const SubAdminProvider = ({ children }) => {
   const [subadmins, setSubadmins] = useState(DEFAULT_SUBADMINS);
 
   const addSubAdmin = useCallback((payload) => {
-    setSubadmins((prev) => [...prev, { ...payload, id: generateId() }]);
+    setSubadmins((prev) => [
+      ...prev,
+      {
+        ...payload,
+        permissions: normalizePermissions(payload.permissions),
+        id: generateId(),
+      },
+    ]);
   }, []);
 
   const updateSubAdmin = useCallback((id, updates) => {
-    setSubadmins((prev) => prev.map((item) => (item.id === id ? { ...item, ...updates } : item)));
+    setSubadmins((prev) =>
+      prev.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              ...updates,
+              permissions: normalizePermissions(updates.permissions ?? item.permissions),
+            }
+          : item,
+      ),
+    );
   }, []);
 
   const deleteSubAdmin = useCallback((id) => {

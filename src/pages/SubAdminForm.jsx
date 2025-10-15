@@ -4,15 +4,21 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
-import { SUB_ADMIN_MODULES } from "../config/subAdminModules";
+import {
+  SUB_ADMIN_MODULES,
+  createEmptyPermissions,
+  normalizePermissions,
+  PERMISSION_LABELS,
+} from "../config/subAdminModules";
 import { useSubAdminManagement } from "../context/SubAdminContext";
 
 const createInitialState = () => ({
   name: "",
   email: "",
   password: "",
-  modules: [],
+  permissions: createEmptyPermissions(),
 });
+
 
 const SubAdminForm = () => {
   const navigate = useNavigate();
@@ -38,7 +44,7 @@ const SubAdminForm = () => {
       name: existingSubAdmin.name,
       email: existingSubAdmin.email,
       password: existingSubAdmin.password,
-      modules: [...existingSubAdmin.modules],
+      permissions: normalizePermissions(existingSubAdmin.permissions),
     });
   }, [id, isEditing, getSubAdminById, navigate]);
 
@@ -54,13 +60,56 @@ const SubAdminForm = () => {
 
   const toggleModule = (moduleId) => {
     setFormState((prev) => {
-      const nextModules = new Set(prev.modules);
-      if (nextModules.has(moduleId)) {
-        nextModules.delete(moduleId);
-      } else {
-        nextModules.add(moduleId);
+      const currentActions = prev.permissions[moduleId] ?? {};
+      const currentlyEnabled = Object.values(currentActions).some(Boolean);
+      const module = SUB_ADMIN_MODULES.find((item) => item.id === moduleId);
+
+      if (!module) {
+        return prev;
       }
-      return { ...prev, modules: Array.from(nextModules) };
+
+      const nextActions = module.actions.reduce((acc, action) => {
+        if (currentlyEnabled) {
+          acc[action] = false;
+        } else {
+          const previousValue = currentActions[action];
+          acc[action] = typeof previousValue === "boolean" ? previousValue : action === "view";
+        }
+        return acc;
+      }, {});
+
+      return {
+        ...prev,
+        permissions: {
+          ...prev.permissions,
+          [moduleId]: nextActions,
+        },
+      };
+    });
+  };
+
+  const toggleAction = (moduleId, action) => {
+    setFormState((prev) => {
+      const module = SUB_ADMIN_MODULES.find((item) => item.id === moduleId);
+      if (!module || !module.actions.includes(action)) {
+        return prev;
+      }
+
+      const currentActions = prev.permissions[moduleId] ?? {};
+      const nextModuleActions = module.actions.reduce((acc, moduleAction) => {
+        acc[moduleAction] = currentActions[moduleAction] ?? false;
+        return acc;
+      }, {});
+
+      nextModuleActions[action] = !currentActions[action];
+
+      return {
+        ...prev,
+        permissions: {
+          ...prev.permissions,
+          [moduleId]: nextModuleActions,
+        },
+      };
     });
   };
 
@@ -76,8 +125,12 @@ const SubAdminForm = () => {
     if (!formState.password.trim()) {
       nextErrors.password = "Enter at least one word for the password.";
     }
-    if (formState.modules.length === 0) {
-      nextErrors.modules = "Select at least one module.";
+    const hasAtLeastOnePermission = Object.values(formState.permissions).some((actions) =>
+      Object.values(actions ?? {}).some(Boolean),
+    );
+
+    if (!hasAtLeastOnePermission) {
+      nextErrors.permissions = "Enable at least one module permission.";
     }
 
     setErrors(nextErrors);
@@ -92,7 +145,7 @@ const SubAdminForm = () => {
       name: formState.name.trim(),
       email: formState.email.trim(),
       password: formState.password.trim(),
-      modules: formState.modules,
+      permissions: normalizePermissions(formState.permissions),
     };
 
     if (isEditing) {
@@ -173,36 +226,75 @@ const SubAdminForm = () => {
               </div>
               <div className="space-y-3">
                 <div className="space-y-1">
-                  <Label>Module Access</Label>
+                  <Label>Module Permissions</Label>
                   <p className="text-xs text-slate-500">
-                    Choose the application modules this sub-admin can manage.
+                    Activate a module to configure the specific actions this sub-admin can take.
                   </p>
                 </div>
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-4">
                   {SUB_ADMIN_MODULES.map((module) => {
-                    const active = formState.modules.includes(module.id);
+                    const actions = formState.permissions[module.id] ?? {};
+                    const moduleEnabled = Object.values(actions).some(Boolean);
+
                     return (
-                      <label
+                      <div
                         key={module.id}
-                        className={`flex cursor-pointer items-start gap-3 rounded-lg border px-3 py-3 text-sm transition-colors ${
-                          active
+                        className={`rounded-lg border px-4 py-4 transition ${
+                          moduleEnabled
                             ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5"
-                            : "border-[var(--color-border)] hover:border-[var(--color-primary)]"
+                            : "border-[var(--color-border)] bg-white"
                         }`}
                       >
-                        <input
-                          type="checkbox"
-                          className="mt-1 h-4 w-4 rounded border-slate-300 text-[var(--color-primary)] focus:ring-[var(--color-primary)] focus:ring-offset-0"
-                          checked={active}
-                          onChange={() => toggleModule(module.id)}
-                        />
-                        <span className="font-medium text-slate-700">{module.label}</span>
-                      </label>
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                          <div>
+                            <p className="text-sm font-semibold text-slate-800">{module.label}</p>
+                            <p className="text-xs text-slate-500">
+                              {moduleEnabled
+                                ? "Adjust the granular permissions below."
+                                : "Enable this module to assign permissions."}
+                            </p>
+                          </div>
+                          <label className="inline-flex cursor-pointer items-center gap-2 text-xs font-medium text-slate-600">
+                            <input
+                              type="checkbox"
+                              className="h-4 w-4 rounded border-slate-300 text-[var(--color-primary)] focus:ring-[var(--color-primary)] focus:ring-offset-0"
+                              checked={moduleEnabled}
+                              onChange={() => toggleModule(module.id)}
+                            />
+                            <span>{moduleEnabled ? "Enabled" : "Disabled"}</span>
+                          </label>
+                        </div>
+                        <div className="mt-4 grid gap-3 sm:grid-cols-2 md:grid-cols-4">
+                          {module.actions.map((action) => {
+                            const checked = actions[action] ?? false;
+                            return (
+                              <label
+                                key={action}
+                                className={`flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-xs font-medium transition ${
+                                  checked
+                                    ? "border-[var(--color-primary)] bg-white text-[var(--color-primary)]"
+                                    : "border-[var(--color-border)] text-slate-600 hover:border-[var(--color-primary)]"
+                                } ${moduleEnabled ? "opacity-100" : "opacity-60"}`}
+                              >
+                                <input
+                                  type="checkbox"
+                                  className="h-4 w-4 rounded border-slate-300 text-[var(--color-primary)] focus:ring-[var(--color-primary)] focus:ring-offset-0"
+                                  disabled={!moduleEnabled}
+                                  checked={checked}
+                                  onChange={() => toggleAction(module.id, action)}
+                                />
+                                <span>{PERMISSION_LABELS[action] ?? action}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </div>
                     );
                   })}
                 </div>
-                {errors.modules && <p className="text-xs text-rose-500">{errors.modules}</p>}
+                {errors.permissions && <p className="text-xs text-rose-500">{errors.permissions}</p>}
               </div>
+
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
@@ -224,18 +316,32 @@ const SubAdminForm = () => {
             <CardDescription>Confirm the areas of the platform this sub-admin will retain control over.</CardDescription>
           </CardHeader>
           <CardContent>
-            {formState.modules.length === 0 ? (
+            {SUB_ADMIN_MODULES.every((module) =>
+              !Object.values(formState.permissions[module.id] ?? {}).some(Boolean),
+            ) ? (
               <p className="text-sm text-slate-500">No modules selected yet.</p>
             ) : (
               <ul className="grid gap-3 sm:grid-cols-2">
-                {formState.modules.map((moduleId) => (
-                  <li
-                    key={moduleId}
-                    className="rounded-lg border border-[var(--color-border)] bg-[var(--color-muted)]/40 px-4 py-3 text-sm font-medium text-slate-700"
-                  >
-                    {moduleLookup[moduleId] ?? moduleId}
-                  </li>
-                ))}
+                {SUB_ADMIN_MODULES.map((module) => {
+                  const actions = formState.permissions[module.id] ?? {};
+                  const activeActions = Object.entries(actions)
+                    .filter(([, value]) => value)
+                    .map(([action]) => PERMISSION_LABELS[action] ?? action);
+
+                  if (activeActions.length === 0) {
+                    return null;
+                  }
+
+                  return (
+                    <li
+                      key={module.id}
+                      className="space-y-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-muted)]/40 px-4 py-3 text-sm text-slate-700"
+                    >
+                      <p className="font-semibold">{moduleLookup[module.id] ?? module.id}</p>
+                      <p className="text-xs text-slate-500">{activeActions.join(', ')}</p>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </CardContent>

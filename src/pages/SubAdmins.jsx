@@ -4,7 +4,7 @@ import { FiMoreVertical } from "react-icons/fi";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { useSubAdminManagement } from "../context/SubAdminContext";
-import { getModuleLabel } from "../config/subAdminModules";
+import { SUB_ADMIN_MODULES, PERMISSION_LABELS } from "../config/subAdminModules";
 import ConfirmationDialog from "../components/ConfirmationDialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/table";
 import { Popover, PopoverContent, PopoverTrigger } from "../components/ui/popover";
@@ -75,8 +75,25 @@ const SubAdmins = () => {
               </TableHeader>
               <TableBody>
                 {subadmins.map((subadmin) => {
-                  const visibleModules = subadmin.modules.slice(0, 3);
-                  const hiddenCount = subadmin.modules.length - visibleModules.length;
+                  const moduleSummaries = SUB_ADMIN_MODULES.map((module) => {
+                    const actions = subadmin.permissions?.[module.id] ?? {};
+                    const activeActions = Object.entries(actions)
+                      .filter(([, value]) => value)
+                      .map(([action]) => PERMISSION_LABELS[action] ?? action);
+
+                    if (activeActions.length === 0) {
+                      return null;
+                    }
+
+                    return {
+                      id: module.id,
+                      label: module.label,
+                      actions: activeActions,
+                    };
+                  }).filter(Boolean);
+
+                  const visibleModules = moduleSummaries.slice(0, 3);
+                  const hiddenCount = moduleSummaries.length - visibleModules.length;
 
                   return (
                     <TableRow key={subadmin.id}>
@@ -85,16 +102,19 @@ const SubAdmins = () => {
                       </TableCell>
                       <TableCell className="whitespace-nowrap text-sm text-slate-600">{subadmin.email}</TableCell>
                       <TableCell>
-                        {subadmin.modules.length === 0 ? (
+                        {moduleSummaries.length === 0 ? (
                           <span className="text-xs text-slate-400">No modules</span>
                         ) : (
                           <div className="flex flex-wrap items-center gap-2">
-                            {visibleModules.map((moduleId) => (
+                            {visibleModules.map((moduleSummary) => (
                               <span
-                                key={moduleId}
-                                className="inline-flex items-center rounded-full border border-[var(--color-border)] bg-white px-2.5 py-1 text-xs font-medium text-slate-600 shadow-sm"
+                                key={moduleSummary.id}
+                                className="inline-flex min-w-[7rem] flex-col rounded-lg border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-xs text-left text-slate-600 shadow-sm"
                               >
-                                {getModuleLabel(moduleId)}
+                                <span className="font-semibold text-slate-700">{moduleSummary.label}</span>
+                                <span className="mt-0.5 text-[11px] text-slate-500">
+                                  {moduleSummary.actions.join(", ")}
+                                </span>
                               </span>
                             ))}
                             {hiddenCount > 0 && (

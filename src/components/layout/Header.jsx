@@ -1,14 +1,25 @@
-import React from "react";
+import React, { useState } from "react";
 import { FiLogOut, FiMenu, FiSearch } from "react-icons/fi";
 import { Button } from "../ui/button";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router";
+import ConfirmationDialog from "../ConfirmationDialog";
 
 const Header = ({ onToggleSidebar }) => {
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
-  const handleLogout = () => {
+  const handleLogoutClick = () => {
+    setIsConfirmOpen(true);
+  };
+
+  const handleCancelLogout = () => {
+    setIsConfirmOpen(false);
+  };
+
+  const handleConfirmLogout = () => {
+    setIsConfirmOpen(false);
     logout();
     navigate("/login");
   };
@@ -33,11 +44,21 @@ const Header = ({ onToggleSidebar }) => {
         <Button
           variant="ghost"
           className="inline-flex items-center space-x-2 rounded-full border border-[var(--color-border)] bg-white px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-800"
-          onClick={handleLogout}
+          onClick={handleLogoutClick}
         >
           <FiLogOut className="h-4 w-4" />
           <span>Logout</span>
         </Button>
+        <ConfirmationDialog
+          open={isConfirmOpen}
+          title="Logout"
+          description="Are you sure you want to log out?"
+          confirmLabel="Logout"
+          cancelLabel="Cancel"
+          destructive
+          onCancel={handleCancelLogout}
+          onConfirm={handleConfirmLogout}
+        />
       </div>
     </header>
   );

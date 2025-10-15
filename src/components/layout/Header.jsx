@@ -3,7 +3,7 @@ import { FiLogOut, FiMenu, FiSearch } from "react-icons/fi";
 import { Button } from "../ui/button";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router";
-import ConfirmationDialog from "../ConfirmationDialog";
+import LogoutConfirmationModal from "../LogoutConfirmationModal";
 
 const Header = ({ onToggleSidebar }) => {
   const { logout } = useAuth();
@@ -49,13 +49,8 @@ const Header = ({ onToggleSidebar }) => {
           <FiLogOut className="h-4 w-4" />
           <span>Logout</span>
         </Button>
-        <ConfirmationDialog
+        <LogoutConfirmationModal
           open={isConfirmOpen}
-          title="Logout"
-          description="Are you sure you want to log out?"
-          confirmLabel="Logout"
-          cancelLabel="Cancel"
-          destructive
           onCancel={handleCancelLogout}
           onConfirm={handleConfirmLogout}
         />

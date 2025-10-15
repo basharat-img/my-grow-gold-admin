@@ -2,6 +2,7 @@ import React, { createContext, useCallback, useContext, useMemo, useState } from
 
 const FormikContext = createContext(null);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useFormikContext = () => {
   const context = useContext(FormikContext);
   if (!context) {

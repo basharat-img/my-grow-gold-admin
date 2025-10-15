@@ -16,6 +16,7 @@ export default defineConfig({
     alias: {
       formik: fileURLToPath(new URL('./src/lib/formik.jsx', import.meta.url)),
       yup: fileURLToPath(new URL('./src/lib/yup.js', import.meta.url)),
+      axios: fileURLToPath(new URL('./src/lib/axios.js', import.meta.url)),
     },
   },
 })

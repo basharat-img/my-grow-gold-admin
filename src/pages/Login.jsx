@@ -40,9 +40,9 @@ const Login = () => {
             validationSchema={validationSchema}
             onSubmit={async (values, { setStatus, setSubmitting }) => {
               setStatus(null);
-              const success = await login(values);
-              if (!success) {
-                setStatus("Invalid credentials. Try admin@gmail.com / 12345678");
+              const result = await login(values);
+              if (!result.success) {
+                setStatus(result.message ?? "Unable to sign in. Please try again.");
                 setSubmitting(false);
                 return;
               }
@@ -100,7 +100,7 @@ const Login = () => {
             )}
           </Formik>
           <p className="mt-6 text-center text-xs text-slate-500">
-            Tip: default credentials are <span className="font-semibold">admin@gmail.com</span> / <span className="font-semibold">12345678</span>.
+            Tip: Use the admin credentials provided to you by the Grow Gold team.
           </p>
         </CardContent>
       </Card>

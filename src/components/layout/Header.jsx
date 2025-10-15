@@ -2,15 +2,12 @@ import React from "react";
 import { FiLogOut, FiMenu, FiSearch } from "react-icons/fi";
 import { Button } from "../ui/button";
 import { useAuth } from "../../context/AuthContext";
-import { useNavigate } from "react-router";
 
 const Header = ({ onToggleSidebar }) => {
   const { logout } = useAuth();
-  const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
-    navigate("/login");
   };
 
   return (

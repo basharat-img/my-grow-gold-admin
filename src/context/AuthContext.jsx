@@ -1,7 +1,15 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import API_ENDPOINTS from "../config/apiEndpoints";
 import { AUTH_EVENTS, ROUTE_PATHS, STORAGE_KEYS } from "../config/constants";
 import { publicApi } from "../lib/apiClients";
+import { useNavigate } from "react-router";
 
 const storageKey = STORAGE_KEYS.authToken;
 
@@ -17,6 +25,7 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [token, setToken] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const stored = window.localStorage.getItem(storageKey);
@@ -42,7 +51,10 @@ export const AuthProvider = ({ children }) => {
 
   const login = useCallback(async ({ email, password }) => {
     try {
-      const response = await publicApi.post(API_ENDPOINTS.auth.login, { email, password });
+      const response = await publicApi.post(API_ENDPOINTS.auth.login, {
+        email,
+        password,
+      });
       const receivedToken =
         response?.data?.data?.token ??
         response?.data?.token ??
@@ -79,8 +91,11 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(false);
     setToken(null);
     window.dispatchEvent(new Event(AUTH_EVENTS.logout));
-    if (typeof window !== "undefined" && window.location.pathname !== ROUTE_PATHS.login) {
-      window.location.replace(ROUTE_PATHS.login);
+    if (
+      typeof window !== "undefined" &&
+      window.location.pathname !== ROUTE_PATHS.login
+    ) {
+      navigate(ROUTE_PATHS.login);
     }
   }, []);
 
@@ -92,7 +107,7 @@ export const AuthProvider = ({ children }) => {
       logout,
       token,
     }),
-    [isAuthenticated, isLoading, login, logout, token],
+    [isAuthenticated, isLoading, login, logout, token]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -27,6 +27,8 @@ const SubAdminForm = () => {
   const { addSubAdmin, updateSubAdmin, getSubAdminById } = useSubAdminManagement();
   const [formState, setFormState] = useState(createInitialState);
   const [errors, setErrors] = useState({});
+  const [submitError, setSubmitError] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (!isEditing) {
@@ -137,7 +139,7 @@ const SubAdminForm = () => {
     return Object.keys(nextErrors).length === 0;
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     if (!validate()) return;
 
@@ -148,17 +150,29 @@ const SubAdminForm = () => {
       permissions: normalizePermissions(formState.permissions),
     };
 
-    if (isEditing) {
-      updateSubAdmin(id, payload);
-    } else {
-      addSubAdmin(payload);
-    }
+    setSubmitError(null);
+    setIsSubmitting(true);
 
-    navigate("/sub-admins");
+    try {
+      if (isEditing) {
+        await updateSubAdmin(id, payload);
+      } else {
+        await addSubAdmin(payload);
+      }
+
+      navigate("/sub-admins");
+    } catch (error) {
+      const message =
+        error?.response?.data?.message ??
+        error?.response?.data?.error ??
+        error?.message ??
+        "Failed to save sub-admin. Please try again.";
+      setSubmitError(message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-
-  console.log({formState})
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -299,11 +313,25 @@ const SubAdminForm = () => {
 
             </div>
 
+            {submitError && <p className="text-sm text-rose-500">{submitError}</p>}
+
             <div className="flex flex-wrap items-center gap-3">
-              <Button type="submit" className="px-5">
-                {isEditing ? "Save Changes" : "Create Sub-Admin"}
+              <Button type="submit" className="px-5" disabled={isSubmitting} aria-busy={isSubmitting}>
+                {isSubmitting
+                  ? isEditing
+                    ? "Saving..."
+                    : "Creating..."
+                  : isEditing
+                    ? "Save Changes"
+                    : "Create Sub-Admin"}
               </Button>
-              <Button type="button" variant="ghost" className="px-5" onClick={() => navigate("/sub-admins")}>
+              <Button
+                type="button"
+                variant="ghost"
+                className="px-5"
+                onClick={() => navigate("/sub-admins")}
+                disabled={isSubmitting}
+              >
                 Cancel
               </Button>
             </div>

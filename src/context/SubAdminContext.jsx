@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
 import { normalizePermissions } from "../config/subAdminModules";
+import { createAdmin } from "../lib/api/admins";
 
 const SubAdminContext = createContext(undefined);
 
@@ -58,15 +59,36 @@ const DEFAULT_SUBADMINS = [
 export const SubAdminProvider = ({ children }) => {
   const [subadmins, setSubadmins] = useState(DEFAULT_SUBADMINS);
 
-  const addSubAdmin = useCallback((payload) => {
-    setSubadmins((prev) => [
-      ...prev,
-      {
+  const addSubAdmin = useCallback(async (payload) => {
+    try {
+      const { admin } = await createAdmin(payload);
+
+      const normalizedPermissions = normalizePermissions(
+        admin?.permissions ?? payload.permissions,
+      );
+
+      const nextSubAdmin = {
         ...payload,
-        permissions: normalizePermissions(payload.permissions),
-        id: generateId(),
-      },
-    ]);
+        ...(admin && typeof admin === "object" ? admin : {}),
+        permissions: normalizedPermissions,
+      };
+
+      setSubadmins((prev) => [
+        ...prev,
+        {
+          ...nextSubAdmin,
+          id: nextSubAdmin.id ?? generateId(),
+        },
+      ]);
+
+      return {
+        success: true,
+        data: nextSubAdmin,
+      };
+    } catch (error) {
+      console.error("Failed to create sub-admin", error);
+      throw error;
+    }
   }, []);
 
   const updateSubAdmin = useCallback((id, updates) => {
